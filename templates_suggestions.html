@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Customer Suggestions</title>
+</head>
+<body>
+    <h1>Customer Suggestions</h1>
+    <form method="POST">
+        <input type="text" name="flavor" placeholder="Suggested Flavor" required>
+        <input type="text" name="allergies" placeholder="Allergy Concerns">
+        <button type="submit">Submit Suggestion</button>
+    </form>
+    <ul>
+        {% for suggestion in suggestions %}
+            <li>{{ suggestion.flavor }} (Allergies: {{ suggestion.allergies or 'None' }})</li>
+        {% endfor %}
+    </ul>
+    <a href="{{ url_for('index') }}">Back to Home</a>
+</body>
+</html>
