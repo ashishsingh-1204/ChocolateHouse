@@ -11,10 +11,25 @@ db.init_app(app)
 @app.before_first_request
 def create_tables():
     db.create_all()
+    seed_data()
 
 @app.route('/')
 def index():
     return render_template('index.html')
+
+def seed_data():
+    if not SeasonalFlavor.query.first():
+        flavors = [
+            SeasonalFlavor(name="Pumpkin Spice", season="Fall"),
+            SeasonalFlavor(name="Peppermint Mocha", season="Winter"),
+        ]
+        ingredients = [
+            Ingredient(name="Cocoa Powder", quantity=200),
+            Ingredient(name="Sugar", quantity=500),
+        ]
+        db.session.bulk_save_objects(flavors + ingredients)
+        db.session.commit()
+        app.logger.info("Database seeded with initial data")
 
 @app.route('/flavors', methods=['GET', 'POST'])
 def flavors():
