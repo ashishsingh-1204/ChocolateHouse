@@ -1,12 +1,16 @@
 from flask import Flask, render_template, request, redirect, url_for
 from models import db, SeasonalFlavor, Ingredient, CustomerSuggestion
 import os
+import logging
 
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///chocolate_house.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 db.init_app(app)
+
+logging.basicConfig(filename='app.log', level=logging.INFO, 
+                    format='%(asctime)s %(levelname)s: %(message)s')
 
 @app.before_first_request
 def create_tables():
@@ -34,14 +38,25 @@ def seed_data():
 @app.route('/flavors', methods=['GET', 'POST'])
 def flavors():
     if request.method == 'POST':
-        name = request.form['name']
-        season = request.form['season']
+        name = request.form['name'].strip()
+        season = request.form['season'].strip()
+
+        if not name or not season:
+            app.logger.error("Invalid input for flavor")
+            return "Both name and season are required!", 400
+
+        if SeasonalFlavor.query.filter_by(name=name).first():
+            app.logger.warning("Duplicate flavor attempt: %s", name)
+            return "Flavor already exists!", 400
+
         new_flavor = SeasonalFlavor(name=name, season=season)
         db.session.add(new_flavor)
         db.session.commit()
+        app.logger.info("New flavor added: %s", name)
+    
     flavors = SeasonalFlavor.query.all()
     return render_template('flavors.html', flavors=flavors)
-
+    
 @app.route('/inventory', methods=['GET', 'POST'])
 def inventory():
     if request.method == 'POST':
