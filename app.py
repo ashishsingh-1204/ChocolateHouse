@@ -38,6 +38,14 @@ def inventory():
     ingredients = Ingredient.query.all()
     return render_template('inventory.html', ingredients=ingredients)
 
+@app.errorhandler(404)
+def page_not_found(e):
+    return render_template('404.html'), 404
+
+@app.errorhandler(500)
+def internal_server_error(e):
+    return render_template('500.html'), 500
+
 @app.route('/suggestions', methods=['GET', 'POST'])
 def suggestions():
     if request.method == 'POST':
